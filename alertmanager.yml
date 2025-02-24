@@ -1,0 +1,18 @@
+global:
+  smtp_smarthost: 'localhost:25'  # Replace with your SMTP server and port
+  smtp_from: 'anisur@appscode.com'
+
+route:
+  receiver: 'email-alert'
+
+receivers:
+  - name: 'email-alert'
+    email_configs:
+      - to: 'anisur@appscode.com'  # Replace with the recipient's email address
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'dev', 'instance']

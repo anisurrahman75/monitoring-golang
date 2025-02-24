@@ -1,7 +1,3 @@
-Here is the tutorial formatted for a README:
-
----
-
 # Prometheus Setup and Architecture
 
 ## Resources:

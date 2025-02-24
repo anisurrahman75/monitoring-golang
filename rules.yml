@@ -1,0 +1,29 @@
+groups:
+  - name: instance_down
+    rules:
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance {{ $labels.instance }} is down"
+          description: "Prometheus target {{ $labels.instance }} is unreachable for more than 1 minute."
+  - name: go_app_alerts
+    rules:
+      - alert: HighRequestLatency
+        expr: hello_world_latency_seconds > 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High request latency detected"
+          description: "Requests to Go application are taking longer than 1 second."
+      - alert: HighErrorRate
+        expr: rate(hello_world_exceptions_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate in Go application"
+          description: "More than 10% of requests are failing in the last 5 minutes."

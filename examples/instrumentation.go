@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
@@ -63,7 +62,6 @@ func MyHandler(w http.ResponseWriter, r *http.Request) {
 	inProgress.Inc()                               // Track in-progress requests
 	timer := prometheus.NewTimer(latencyHistogram) // Start histogram timer
 	defer timer.ObserveDuration()
-
 	startTime := time.Now()
 	requestCounter.Inc()
 
@@ -77,21 +75,27 @@ func MyHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Hello World"))
-
 	lastServedTime.Set(float64(time.Now().Unix()))          // Set last served time
 	latencySummary.Observe(time.Since(startTime).Seconds()) // Observe request duration
 	inProgress.Dec()                                        // Decrement in-progress counter
 }
 
 func main() {
+	// Create a ServeMux for the Prometheus metrics server
+	metricsMux := http.NewServeMux()
+	metricsMux.Handle("/metrics", promhttp.Handler())
+
 	// Start Prometheus metrics server on port 8000
 	go func() {
-		http.Handle("/metrics", promhttp.Handler())
-		log.Fatal(http.ListenAndServe("localhost:8000", nil))
+		log.Println("Starting Prometheus metrics server on http://localhost:8000")
+		log.Fatal(http.ListenAndServe("localhost:8000", metricsMux))
 	}()
 
+	// Create a ServeMux for the main HTTP server
+	mainMux := http.NewServeMux()
+	mainMux.HandleFunc("/", MyHandler)
+
 	// Start HTTP server on port 8001
-	http.HandleFunc("/", MyHandler)
-	fmt.Println("Server is running on http://localhost:8001")
-	log.Fatal(http.ListenAndServe("localhost:8001", nil))
+	log.Println("Starting main HTTP server on http://localhost:8001")
+	log.Fatal(http.ListenAndServe("localhost:8001", mainMux))
 }
